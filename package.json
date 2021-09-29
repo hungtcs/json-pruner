@@ -1,6 +1,6 @@
 {
   "name": "json-pruner",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "json pruning tool based on jsonpath",
   "main": "dist/json-pruner.js",
   "scripts": {
