@@ -1,0 +1,49 @@
+{
+  "name": "json-pruner",
+  "version": "0.0.1",
+  "description": "json pruning tool based on jsonpath",
+  "main": "dist/json-pruner.js",
+  "scripts": {
+    "test": "jest",
+    "start": "npm run build -- --watch",
+    "prebuild": "rimraf dist/**/*",
+    "build": "tsc --project tsconfig.app.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hungtcs/json-pruner.git"
+  },
+  "keywords": [
+    "cli",
+    "json",
+    "json-pruner"
+  ],
+  "author": "鸿则 <hungtcs@outlook.com> (https://github.com/hungtcs)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hungtcs/json-pruner/issues"
+  },
+  "homepage": "https://github.com/hungtcs/json-pruner#readme",
+  "dependencies": {
+    "commander": "^8.2.0",
+    "jsonpath": "^1.1.1",
+    "lodash.unset": "^4.5.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.0.2",
+    "@types/jsonpath": "^0.2.0",
+    "@types/lodash.unset": "^4.5.6",
+    "@types/node": "^16.10.1",
+    "jest": "^27.2.3",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^27.0.5",
+    "ts-node": "^10.2.1",
+    "typescript": "^4.4.3"
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "bin": {
+    "json-pruner": "dist/cli.js"
+  }
+}
