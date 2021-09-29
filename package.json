@@ -1,8 +1,8 @@
 {
   "name": "json-pruner",
   "version": "0.0.2",
-  "description": "json pruning tool based on jsonpath",
-  "main": "dist/json-pruner.js",
+  "description": "json pruning tool based on json-path",
+  "main": "dist/index.js",
   "scripts": {
     "test": "jest",
     "start": "npm run build -- --watch",
@@ -27,13 +27,11 @@
   "homepage": "https://github.com/hungtcs/json-pruner#readme",
   "dependencies": {
     "commander": "^8.2.0",
-    "jsonpath": "^1.1.1",
-    "lodash.unset": "^4.5.2"
+    "jsonpath": "^1.1.1"
   },
   "devDependencies": {
     "@types/jest": "^27.0.2",
     "@types/jsonpath": "^0.2.0",
-    "@types/lodash.unset": "^4.5.6",
     "@types/node": "^16.10.1",
     "jest": "^27.2.3",
     "rimraf": "^3.0.2",

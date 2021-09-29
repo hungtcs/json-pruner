@@ -1,51 +1,83 @@
 #!/usr/bin/env node
 import path from 'path';
-import { prune } from './json-pruner';
-import { promises as fs, constants } from 'fs';
-import { Argument, Option, program } from 'commander';
+import { prune, pick } from './lib/json-pruner';
+import { promises as fs } from 'fs';
+import { readJSONFile, readStdin } from './lib/fs';
+import { PickOptions, PruneOptions } from './lib/interfaces';
+import { Argument, Command, InvalidOptionArgumentError, Option } from 'commander';
 
-program.showHelpAfterError();
+const program = new Command().showHelpAfterError();
 
 program
   .command('prune')
-  .description('修建')
-  .usage('<input-file> --json-path <json-paths...>')
-  .addOption(new Option('-p --json-path <jsonpath...>', '路径'))
-  .addArgument(new Argument('<input-file>', 'input file path'))
-  .action(async (inputFilePath, options) => {
-
-    const filePath = path.resolve(inputFilePath);
-    const jsonPaths = options.jsonPath ?? [];
-    await pruneJSONFile(filePath, jsonPaths);
-
-
+  .description('pruning json through json-path')
+  .addOption(new Option('-f --file <file>', 'input file path'))
+  .addOption(
+    new Option('-p --pretty [pretty]', 'formatted output')
+      .default(true)
+      .argParser(value => value !== 'false')
+  )
+  .addOption(
+    new Option('-w --write [write]', 'overwrite file, effective when --file provided, dangerous and irreversible')
+      .default(false)
+      .argParser(value => value === 'true')
+  )
+  .addOption(new Option('-o --output <output>', 'output path'))
+  .addOption(
+    new Option('-i --indent-size <indentSize>', 'indent size of the output file, effective when pretty is true')
+      .default(2)
+      .argParser(value => {
+        const result = Number.parseInt(value);
+        if (Number.isNaN(result)) {
+          throw new InvalidOptionArgumentError('argument must be integer');
+        }
+        return result;
+      })
+  )
+  .addArgument(new Argument('<json-paths...>', 'json path expressions'))
+  .action(async (jsonPaths: Array<string>, options: PruneOptions) => {
+    const object = await (options.file ? readJSONFile(path.resolve(options.file)) : readStdin());
+    const result = jsonPaths.reduce((obj, jsonPath) => prune(obj, jsonPath), object);
+    const json = JSON.stringify(result, null, options.pretty ? options.indentSize : 0);
+    if (options.file && options.write) {
+      await fs.writeFile(path.resolve(options.file), json, { encoding: 'utf-8' });
+    } else if (options.output) {
+      await fs.writeFile(path.resolve(options.output), json, { encoding: 'utf-8' });
+    } else {
+      process.stdout.write(json);
+      process.stdout.write('\n');
+    }
   });
 
-program.parseAsync(process.argv)
+program
+  .command('pick')
+  .description('pick value through json-path')
+  .addOption(new Option('-f --file <file>', 'input file path'))
+  .addArgument(new Argument('<json-paths...>', 'json path expressions'))
+  .action(async (jsonPaths: Array<string>, options: PickOptions) => {
+    const object = await (options.file ? readJSONFile(path.resolve(options.file)) : readStdin());
+    const results = jsonPaths.reduce<any>(
+      (_results, jsonPath) => (_results.push(...pick(object, jsonPath)), _results),
+      [],
+    );
+    results.forEach((b: any) => {
+      process.stdout.write(JSON.stringify(b));
+      process.stdout.write(`\n`);
+    });
+  })
+
+program
+  .name('json-pruner')
+  .description('json pruning tool based on json-path')
+  .usage('[command] [options]')
+  .parseAsync(process.argv)
   .catch(err => {
     if (err instanceof Error) {
-      process.stderr.write(err.message);
+      process.stderr.write(`ERROR: ${ err.message }\n`);
     } else if (typeof(err) === 'string') {
-      process.stderr.write(err);
+      process.stderr.write(`ERROR: ${ err }\n`);
     } else {
       console.error(err);
     }
     process.exit(1);
   });
-
-async function pruneJSONFile(filePath: string, jsonPaths: Array<string>) {
-  try {
-    await fs.access(filePath, constants.R_OK & constants.W_OK);
-    const json = await fs.readFile(path.resolve(filePath), { encoding: 'utf-8' });
-    const object = JSON.parse(json);
-
-    const result = jsonPaths.reduce(
-      (obj, jsonPath) => prune(obj, jsonPath),
-      object,
-    );
-    const resultJSON = JSON.stringify(result, null, 2);
-    process.stdout.write(resultJSON);
-  } catch(err) {
-    throw err;
-  }
-}

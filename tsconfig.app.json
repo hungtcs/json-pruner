@@ -6,6 +6,6 @@
   },
   "files": [
     "src/cli.ts",
-    "src/json-pruner.ts"
+    "src/index.ts"
   ]
 }
