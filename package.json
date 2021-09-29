@@ -7,7 +7,8 @@
     "test": "jest",
     "start": "npm run build -- --watch",
     "prebuild": "rimraf dist/**/*",
-    "build": "tsc --project tsconfig.app.json"
+    "build": "tsc --project tsconfig.app.json",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
